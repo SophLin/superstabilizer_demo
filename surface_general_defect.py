@@ -162,13 +162,13 @@ class LogicalQubit:
         # bottom left data, bottom left syn, bottom right data, bottom right syn]
         corners = [
             0,
-            d**2 + d // 2,
+            d ** 2 + d // 2,
             d - 1,
-            d**2 + d // 2 - 1,
-            d**2 - d,
-            2 * d**2 - 1 - d // 2,
-            d**2 - 1,
-            2 * d**2 - 2 - d // 2,
+            d ** 2 + d // 2 - 1,
+            d ** 2 - d,
+            2 * d ** 2 - 1 - d // 2,
+            d ** 2 - 1,
+            2 * d ** 2 - 2 - d // 2,
         ]
         # look up data qubit from coords
         data_matching = [[None for _ in range(2 * d)] for _ in range(2 * d)]
@@ -176,10 +176,10 @@ class LogicalQubit:
         syndrome_matching = {}
         # lookup table for qubit status, data qubits then syndromes
         is_disabled = np.zeros(
-            2 * d**2 - 1
+            2 * d ** 2 - 1
         )  # 0:normal, 1: disabled(requires superstabilizer), -1:deleted (due to defect on boundary)
         # all data qubits, including the missing ones. DataQubit objects
-        data_list = [None for i in range(d**2)]
+        data_list = [None for i in range(d ** 2)]
         # data qubits on the dynamic boundaries: red left, red right, blue top, blue bottom
         # note: they are either on the original boundary or next to a deleted qubit
         dynamic_boundaries = [[], [], [], []]
@@ -189,7 +189,7 @@ class LogicalQubit:
         # look up the data qubits connected to the syndrome qubits, including the disabled
         syn_info = []  # items are MeasureQubit
         # look up the syn qubits connected to the data qubits, including the disabled
-        data_info = [[] for i in range(d**2)]  # items are lists of qubit names
+        data_info = [[] for i in range(d ** 2)]  # items are lists of qubit names
         self.boundary_deformation = np.empty(
             4
         )  # total width of defects on each boundary (excluding ends), left:0,right:1,top:2,bottom:3
@@ -270,45 +270,45 @@ class LogicalQubit:
                     q += 1
 
         def check_remaining_qubits():  # returns True if too many qubits are lost
-            self.num_inactive_data = np.count_nonzero(is_disabled[: d**2])
-            self.num_inactive_syn = np.count_nonzero(is_disabled[d**2 :])
-            self.num_data_superstabilizer = np.count_nonzero(is_disabled[: d**2] == 1)
-            if self.num_inactive_data > d**2 * data_loss_tolerance:
+            self.num_inactive_data = np.count_nonzero(is_disabled[: d ** 2])
+            self.num_inactive_syn = np.count_nonzero(is_disabled[d ** 2 :])
+            self.num_data_superstabilizer = np.count_nonzero(is_disabled[: d ** 2] == 1)
+            if self.num_inactive_data > d ** 2 * data_loss_tolerance:
                 self.too_many_qubits_lost = True
                 return True
             return False
 
         def is_boundary(qname):
             # return True if the qubit is on the (original) boundary
-            if qname < d**2:  # data qubit
+            if qname < d ** 2:  # data qubit
                 x, y = data_list[qname].coords
                 if x == 0 or x == 2 * (d - 1) or y == 0 or y == 2 * (d - 1):
                     return True
                 else:
                     return False
             else:  # syndrome qubit
-                x, y = syn_info[qname - d**2].coords
+                x, y = syn_info[qname - d ** 2].coords
                 if x == -1 or x == 2 * d - 1 or y == -1 or y == 2 * d - 1:
                     return True
                 else:
                     return False
 
         def near_blue_boundary(qname):
-            x, y = syn_info[qname - d**2].coords
+            x, y = syn_info[qname - d ** 2].coords
             if x == 1 or x == 2 * d - 3:
                 return True
             return False
 
         def near_red_boundary(qname):
-            x, y = syn_info[qname - d**2].coords
+            x, y = syn_info[qname - d ** 2].coords
             if y == 1 or y == 2 * d - 3:
                 return True
             return False
 
         def near_boundary(qname):
             # syndrome qubit near the (original) boundary
-            assert qname >= d**2
-            x, y = syn_info[qname - d**2].coords
+            assert qname >= d ** 2
+            x, y = syn_info[qname - d ** 2].coords
             if near_blue_boundary(qname) or near_red_boundary(qname):
                 return True
             else:
@@ -380,7 +380,7 @@ class LogicalQubit:
         def handle_disconnected_data(only_handle_boundary=False):
             # find data qubit measured by only X syn or only Z syn, or no syn - disable it
             any_change = False
-            for i in range(d**2):
+            for i in range(d ** 2):
                 if (not is_disabled[i]) or (
                     only_handle_boundary and is_disabled[i] == 1
                 ):
@@ -392,10 +392,10 @@ class LogicalQubit:
                         if (not is_disabled[j]) or (
                             only_handle_boundary and is_disabled[j] == 1
                         ):
-                            if syn_info[j - d**2].basis == "X":
+                            if syn_info[j - d ** 2].basis == "X":
                                 active_xsyn.append(j)
                             else:
-                                assert syn_info[j - d**2].basis == "Z"
+                                assert syn_info[j - d ** 2].basis == "Z"
                                 active_zsyn.append(j)
                         elif is_disabled[j] == -1:  # if the syn is deleted
                             near_deleted_qubit = True
@@ -425,7 +425,7 @@ class LogicalQubit:
                     return True
                 return False
 
-            active_data_q = [data_list[i] for i in range(d**2) if not_missing(i)]
+            active_data_q = [data_list[i] for i in range(d ** 2) if not_missing(i)]
             union_find = DisJointSets(len(active_data_q))
             for i in range(len(active_data_q)):
                 for j in range(i + 1, len(active_data_q)):
@@ -499,13 +499,13 @@ class LogicalQubit:
             if verbose:
                 print("Delete weight-2 syndrome qubit", weight2_syn[0])
             data_to_delete = []  # delete 2 data qubits
-            for dataq in syn_info[weight2_syn[0] - d**2].data_qubits:
+            for dataq in syn_info[weight2_syn[0] - d ** 2].data_qubits:
                 if dataq is not None:
                     is_disabled[dataq.name] = -1
                     data_to_delete.append(dataq.name)
             if verbose:
                 print("Delete data qubits", data_to_delete)
-            neighbors_of_syn0 = syn_info[weight4_syn[0] - d**2].data_qubits
+            neighbors_of_syn0 = syn_info[weight4_syn[0] - d ** 2].data_qubits
             assert None not in neighbors_of_syn0
             datanames_of_syn0 = [dataq.name for dataq in neighbors_of_syn0]
             if all(data_idx in datanames_of_syn0 for data_idx in data_to_delete):
@@ -521,7 +521,7 @@ class LogicalQubit:
             # if qname is on or near (the original) boundary, mark it as deleted
             # delete nearby qubits as needed
             # return if the qubit is handled - if it is not on the boundary it is not handled
-            if qname < d**2:  # data qubit
+            if qname < d ** 2:  # data qubit
                 if is_boundary(qname):
                     handle_boundary_data(qname)
                     return True
@@ -529,7 +529,7 @@ class LogicalQubit:
                     return False
             else:  # syndrome qubit
                 if is_boundary(qname):  # weight-2 syndrome
-                    for data_idx in syn_info[qname - d**2].data_qubits:
+                    for data_idx in syn_info[qname - d ** 2].data_qubits:
                         if data_idx is not None:
                             handle_boundary_data(data_idx.name)  # delete 4 qubits
                             return True
@@ -537,8 +537,8 @@ class LogicalQubit:
                     # 2 cases: same color as boundary (hard)
                     # or different color than boundary (easy - delete 4 qubits)
                     # corner treated as different color from boundary
-                    syn_basis = syn_info[qname - d**2].basis
-                    x, y = syn_info[qname - d**2].coords
+                    syn_basis = syn_info[qname - d ** 2].basis
+                    x, y = syn_info[qname - d ** 2].coords
                     is_disabled[qname] = -1
                     if verbose:
                         print("Delete syndrome qubit", qname)
@@ -568,7 +568,7 @@ class LogicalQubit:
                         if verbose:
                             print("Delete weight-2 syndrome qubit", weight2_qname)
                         data_to_delete = []  # delete 2 data qubits
-                        for dataq in syn_info[weight2_qname - d**2].data_qubits:
+                        for dataq in syn_info[weight2_qname - d ** 2].data_qubits:
                             if dataq is not None:
                                 is_disabled[dataq.name] = -1
                                 data_to_delete.append(dataq.name)
@@ -620,9 +620,9 @@ class LogicalQubit:
 
         def count_remaining_dataq(qname):
             # return number of syndrome qubit qname's data qubits that have not been deleted
-            assert qname >= d**2
+            assert qname >= d ** 2
             count = 0
-            for dataq in syn_info[qname - d**2].data_qubits:
+            for dataq in syn_info[qname - d ** 2].data_qubits:
                 if dataq is not None:
                     if is_disabled[dataq.name] != -1:
                         count += 1
@@ -631,7 +631,7 @@ class LogicalQubit:
         def handle_defect_on_new_boundary(qname):  # qname is name of a broken qubit
             # if qname is on or near (the dynamic) boundary, mark it as deleted
             # return if the qubit is handled - if it is not on or near the boundary it is not handled
-            if qname < d**2:  # data qubit
+            if qname < d ** 2:  # data qubit
                 # data qubit on the boundary -> only next to 1 stabilizer whose color is different
                 # from the boundary. delete that syndrome qubit.
                 # first handle edge case - corner
@@ -689,7 +689,7 @@ class LogicalQubit:
                     ]:  # syndrome qubits connected to qname
                         if is_disabled[syn_name] != -1:  # exclude the deleted syndromes
                             if (
-                                syn_info[syn_name - d**2].basis == "Z"
+                                syn_info[syn_name - d ** 2].basis == "Z"
                             ):  # blue syndrome
                                 is_disabled[syn_name] = -1
                                 if verbose:
@@ -708,7 +708,7 @@ class LogicalQubit:
                         qname
                     ]:  # syndrome qubits connected to qname
                         if is_disabled[syn_name] != -1:  # exclude the deleted syndromes
-                            if syn_info[syn_name - d**2].basis == "X":  # red syndrome
+                            if syn_info[syn_name - d ** 2].basis == "X":  # red syndrome
                                 is_disabled[syn_name] = -1
                                 if verbose:
                                     print("\t also delete syndrome", syn_name)
@@ -718,7 +718,7 @@ class LogicalQubit:
                     delete_basis = "N"  # None
                     for syn_name in data_info[qname]:
                         if count_remaining_dataq(syn_name) < 4:
-                            if syn_info[syn_name - d**2].basis == "X":  # red boundary
+                            if syn_info[syn_name - d ** 2].basis == "X":  # red boundary
                                 # delete neighboring blue syndromes
                                 delete_basis = "Z"
                             else:  # blue boundary
@@ -735,7 +735,7 @@ class LogicalQubit:
                             "(superstablizer requires deleted qubits)",
                         )
                     for syn_name in data_info[qname]:
-                        if syn_info[syn_name - d**2].basis == delete_basis:
+                        if syn_info[syn_name - d ** 2].basis == delete_basis:
                             is_disabled[syn_name] = -1
                             if verbose:
                                 print("\t Delete syndrome qubit", syn_name)
@@ -743,7 +743,7 @@ class LogicalQubit:
             else:  # syndrome qubit
                 # syndrome qubit is on the boundary if one of its data qubits is on the boundary
                 boundary_color = "N"  # None
-                for dataq in syn_info[qname - d**2].data_qubits:
+                for dataq in syn_info[qname - d ** 2].data_qubits:
                     if dataq is not None:
                         if (
                             dataq.name == dynamic_boundaries[0][0]
@@ -778,12 +778,12 @@ class LogicalQubit:
                     return False
                 is_disabled[qname] = -1
                 # if it is on a boundary with a different color - easy case, just delete it
-                if syn_info[qname - d**2].basis != boundary_color:
+                if syn_info[qname - d ** 2].basis != boundary_color:
                     if verbose:
                         print("Delete (new) boundary syndrome", qname)
                 else:  # if it is only on a boundary with the same color - hard case,
                     #  also need to delete adjacent syndromes of different color
-                    x, y = syn_info[qname - d**2].coords
+                    x, y = syn_info[qname - d ** 2].coords
                     # coords of neighboring syndromes with different colors
                     possible_neighbor_coords = [
                         (x, y + 2),
@@ -812,12 +812,12 @@ class LogicalQubit:
             active_syn_of_color = []
             for syn_name in data_info[qname]:  # get idx of a neighboring syndrome
                 if is_disabled[syn_name] != -1:  # syndrome is not deleted
-                    if syn_info[syn_name - d**2].basis == boundary_type:
+                    if syn_info[syn_name - d ** 2].basis == boundary_type:
                         active_syn_of_color.append(syn_name)
             for syn_name in active_syn_of_color:
                 remaining_dataq = []
                 deleted_dataq = []
-                for dataq in syn_info[syn_name - d**2].data_qubits:
+                for dataq in syn_info[syn_name - d ** 2].data_qubits:
                     if dataq is not None:
                         if is_disabled[dataq.name] == -1:
                             deleted_dataq.append(dataq)
@@ -837,7 +837,7 @@ class LogicalQubit:
                             break
                 else:
                     assert len(remaining_dataq) == 4
-                    syn_x, syn_y = syn_info[syn_name - d**2].coords
+                    syn_x, syn_y = syn_info[syn_name - d ** 2].coords
                     neighbor_syn0 = (syn_x, syn_y + 2 * (y0 - syn_y))
                     neighbor_data0 = (x0 + 2 * (syn_x - x0), y0)
                     neighbor_syn1 = (syn_x + 2 * (x0 - syn_x), syn_y)
@@ -982,7 +982,7 @@ class LogicalQubit:
             # disable data qubits connected to broken syndrome qubits
             any_change = False
             for i in range(len(syn_info)):
-                if is_disabled[i + d**2] == 1:  # if the syndrome qubit is disabled
+                if is_disabled[i + d ** 2] == 1:  # if the syndrome qubit is disabled
                     for data_q in syn_info[i].data_qubits:
                         if data_q is not None:
                             if is_disabled[data_q.name] == 0:
@@ -992,7 +992,7 @@ class LogicalQubit:
                                 if verbose:
                                     print(
                                         "Handle broken syndrome",
-                                        i + d**2,
+                                        i + d ** 2,
                                         ": disable",
                                         data_q.name,
                                     )
@@ -1255,7 +1255,7 @@ class LogicalQubit:
                 self.data.append(data_list[i])
 
         # partition the defects into clusters
-        disabled_data_q = [data_list[i] for i in range(d**2) if is_disabled[i] == 1]
+        disabled_data_q = [data_list[i] for i in range(d ** 2) if is_disabled[i] == 1]
         if len(disabled_data_q) > 0:
             union_find = DisJointSets(len(disabled_data_q))
             for i in range(len(disabled_data_q)):
@@ -1483,18 +1483,6 @@ class LogicalQubit:
         return self.horizontal_distance
 
     def edge_deformation(self):
-        # if len(self.deformed_boundaries) == 0:
-        #    return 0
-        # if len(self.deformed_boundaries) == 1:
-        #    return 1
-        # if len(self.deformed_boundaries) == 2:
-        #    if (self.deformed_boundaries[0] + self.deformed_boundaries[1]) % 2 == 1:
-        #        return 3
-        #    else:
-        #        return 2
-        # if len(self.deformed_boundaries) == 3:
-        #    return 4
-        # return 5
         return self.boundary_deformation
 
     def print_gauges(self):
